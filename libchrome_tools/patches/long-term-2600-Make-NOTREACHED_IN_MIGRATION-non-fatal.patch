@@ -1,0 +1,29 @@
+From b73c4cf0e1f1860db0de5ad36a03e7b11d2cbb01 Mon Sep 17 00:00:00 2001
+From: Ryo Hashimoto <hashimoto@chromium.org>
+Date: Tue, 17 Sep 2024 16:25:53 +0900
+Subject: [PATCH] Make NOTREACHED_IN_MIGRATION non-fatal
+
+BUG=b:367556630
+TEST=CQ
+
+Change-Id: I3eebfc618a0b05bd0b20225a1c53e602ad443789
+---
+ base/check.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/base/check.cc b/base/check.cc
+index 6b0a6bf9c0..6a15acb852 100644
+--- a/base/check.cc
++++ b/base/check.cc
+@@ -346,7 +346,7 @@ CheckError::CheckError(LogMessage* log_message) : log_message_(log_message) {}
+ NotReachedError NotReachedError::NotReached(base::NotFatalUntil fatal_milestone,
+                                             const base::Location& location) {
+   auto* const log_message = new NotReachedLogMessage(
+-      location, GetCheckSeverity(fatal_milestone), fatal_milestone);
++      location, GetNotFatalUntilSeverity(fatal_milestone), fatal_milestone);
+ 
+   // TODO(pbos): Consider a better message for NotReached(), this is here to
+   // match existing behavior + test expectations.
+-- 
+2.46.0.792.g87dc391469-goog
+
