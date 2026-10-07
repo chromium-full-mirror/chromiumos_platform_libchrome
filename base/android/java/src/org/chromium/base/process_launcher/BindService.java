@@ -18,7 +18,6 @@ import androidx.annotation.RequiresApi;
 
 import org.chromium.base.BaseFeatureList;
 import org.chromium.base.ContextUtils;
-import org.chromium.build.BuildConfig;
 import org.chromium.build.annotations.NullMarked;
 import org.chromium.build.annotations.Nullable;
 
@@ -36,11 +35,6 @@ public final class BindService {
         public int mRebindServiceCount;
         public int mUnbindServiceCount;
         public int mUpdateServiceGroupCount;
-    }
-
-    static boolean supportVariableConnections() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
-                && !BuildConfig.IS_INCREMENTAL_INSTALL;
     }
 
     // Note that handler is not guaranteed to be used, and client still need to correctly handle
@@ -68,7 +62,7 @@ public final class BindService {
         if (sBinderCallCounter != null) {
             sBinderCallCounter.mBindServiceCount++;
         }
-        if (supportVariableConnections() && instanceName != null) {
+        if (instanceName != null) {
             return context.bindIsolatedService(intent, flags, instanceName, executor, connection);
         }
 
