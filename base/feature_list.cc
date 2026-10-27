@@ -662,9 +662,7 @@ FeatureList::PrepareRuntimeMutableFeatureStateUpdateImpl(
   if (it == runtime_mutable_overrides_.end()) {
     // The feature is not enabled for runtime mutability. This could be because
     // the feature is not runtime mutable, or because EnableRuntimeMutability()
-    // has not been called for the feature, or because runtime mutability
-    // has been disabled due to an early (pre-feature-list-initialization)
-    // access.
+    // has not been called for the feature.
     LogRuntimeMutabilityResult(feature_name,
                                internal::RuntimeMutabilityResult::kFailure);
     return std::nullopt;
@@ -875,8 +873,9 @@ bool FeatureList::IsEnabled(const Feature& feature) {
     EarlyFeatureAccessTracker::GetInstance()->AccessedFeature(
         feature, g_feature_list_instance &&
                      g_feature_list_instance->IsEarlyAccessInstance());
-    return feature.default_state == FEATURE_ENABLED_BY_DEFAULT ||
-           feature.default_state == FEATURE_DISABLED_FOR_COUNTRIES;
+    const FeatureState default_state = feature.GetDefaultState();
+    return default_state == FEATURE_ENABLED_BY_DEFAULT ||
+           default_state == FEATURE_DISABLED_FOR_COUNTRIES;
   }
   return g_feature_list_instance->IsFeatureEnabled(feature);
 }
@@ -1229,10 +1228,11 @@ bool FeatureList::IsFeatureEnabledForOverrideState(
     return overridden_state == OVERRIDE_ENABLE_FEATURE;
   }
 
-  if (IsCountrySpecificFeatureState(feature.default_state)) [[unlikely]] {
+  const FeatureState default_state = feature.GetDefaultState();
+  if (IsCountrySpecificFeatureState(default_state)) [[unlikely]] {
     const auto& restricted_feature =
         static_cast<const FeatureWithCountryRestriction&>(feature);
-    switch (restricted_feature.default_state) {
+    switch (default_state) {
       case FEATURE_DISABLED_FOR_COUNTRIES:
         return !std::ranges::contains(restricted_feature.countries,
                                       variation_country_);
@@ -1244,7 +1244,7 @@ bool FeatureList::IsFeatureEnabledForOverrideState(
     }
   }
 
-  return feature.default_state == FEATURE_ENABLED_BY_DEFAULT;
+  return default_state == FEATURE_ENABLED_BY_DEFAULT;
 }
 
 std::optional<bool> FeatureList::IsFeatureEnabledIfOverridden(
